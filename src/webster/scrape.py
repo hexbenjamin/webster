@@ -6,14 +6,39 @@ import json
 import os
 import requests
 
-from collections import defaultdict
+from collections import defaultdict, deque
 from typing import Dict
 
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
 from webster import tools
-from webster.console import warn, CPRINT
+from webster.console import cmsg
+
+
+class Url:
+    """
+    A class representing a URL object.
+
+    Attributes:
+        url (str): The URL to parse.
+        scheme (str): The scheme of the URL.
+        origin (str): The origin (netloc) of the URL.
+        path (str): The path of the URL.
+    """
+
+    def __init__(self, url: str):
+        """
+        Initialize the URL object.
+
+        Args:
+            url (str): The URL to parse.
+        """
+        self.url = url
+        url_parts = urlparse(url)
+        self.scheme = url_parts.scheme
+        self.origin = url_parts.netloc
+        self.path = url_parts.path
 
 
 class Scraper:
@@ -33,14 +58,16 @@ class Scraper:
             Save the sitemap to the output path at `Scraper.output_path`.
     """
 
-    def __init__(self, output_path: os.PathLike = os.getcwd()):
+    def __init__(self, url: str, output_path: os.PathLike = os.getcwd()):
         """
         Initialize the Scraper.
 
         Args:
+            url (str): The URL to scrape.
             output_path (os.PathLike, optional): The output path to save the scraped files. Defaults to the current working directory.
         """
-        self.output_path = output_path
+        self.url = Url(url)
+        self.output_path = os.path.join(output_path, ".webster")
         self.sitemap = {}
 
     def get_response_and_save(self, url: str) -> requests.Response:
@@ -65,83 +92,88 @@ class Scraper:
         response = requests.get(url)
         try:
             response.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            warn(e)
+        except requests.exceptions.HTTPError as err:
+            cmsg("warn", msg=err)
             return None
 
-        output_path = os.path.join(self.output_path, "scrape")
-        tools.mkdir(output_path)
+        if not response:
+            return
 
         clean_url = tools.clean_url(url)
-        with open(os.path.join(output_path, f"{clean_url}.html"), "wb") as f:
+        with open(os.path.join(self.output_path, f"{clean_url}.html"), "wb") as f:
             f.write(response.content)
 
         return response
 
     def scrape_links(
         self,
-        scheme: str,
-        origin: str,
-        path: str,
         depth: int = 3,
     ) -> Dict[str, str]:
         """
         Recursively scrape links from a given URL up to a specified depth.
 
         Args:
-            scheme (str): The URL scheme (e.g. "http", "https").
-            origin (str): The URL origin (e.g. "example.com").
-            path (str): The URL path (e.g. "/about").
-            depth (int, optional): The maximum depth to scrape. Defaults to 3.
+            scheme (str): The URL scheme.
+            origin (str): The URL origin.
+            path (str): The URL path.
+            depth (int, optional): The maximum number of link-outs to follow from the URL. Defaults to 3.
 
         Returns:
             Dict[str, str]: A dictionary containing the scraped URLs.
         """
 
-        webster_path = os.path.join(self.output_path, ".webster")
+        output_path = os.path.join(self.output_path, "scrape")
+        tools.mkdir(output_path)
+
+        scheme = self.url.scheme
+        origin = self.url.origin
+        path = self.url.path
 
         site_url = f"{scheme}://{origin}{path}"
         clean_url = tools.clean_url(site_url)
 
-        if depth < 0 or self.sitemap[clean_url] != "":
-            return
-
         self.sitemap[clean_url] = site_url
-        response = self.get_response_and_save(site_url)
-        if not response:
-            return
 
-        soup = BeautifulSoup(response.content, "html.parser")
-        links = soup.find_all("a")
+        queue = deque([(site_url, depth)])
+        visited = {clean_url}
 
-        # recursion
-        for link in links:
-            href = urlparse(link.get("href"))
-
-            # don't scrape external links
-            if href.netloc not in [origin, ""] or href.scheme not in ["https", ""]:
+        while queue:
+            url, current_depth = queue.popleft()
+            if current_depth < 0:
                 continue
 
-            self.scrape_links(
-                href.scheme or "https",
-                href.netloc or origin,
-                href.path,
-                depth=depth - 1,
-            )
+            response = self.get_response_and_save(url)
+            if not response:
+                continue
+
+            soup = BeautifulSoup(response.content, "html.parser")
+            links = soup.find_all("a")
+
+            for link in links:
+                href = urlparse(link.get("href"))
+
+                # don't scrape external links
+                if href.netloc not in [origin, ""] or href.scheme not in ["https", ""]:
+                    continue
+
+                new_url = (
+                    f"{href.scheme or 'https'}://{href.netloc or origin}{href.path}"
+                )
+                clean_new_url = tools.clean_url(new_url)
+
+                if clean_new_url not in visited:
+                    visited.add(clean_new_url)
+                    self.sitemap[clean_new_url] = new_url
+                    queue.append((new_url, current_depth - 1))
 
         return self.sitemap
 
     def save_sitemap(self) -> None:
         """
-        Save the sitemap to the specified output path.
-
-        Args:
-            sitemap (Dict[str, str]): The sitemap to save.
-            output_path (os.PathLike): The output path to save the sitemap to.
+        Save the sitemap to the path `.webster/scrape/sitemap.json`.
         """
 
-        tools.mkdir(self.output_path)
+        sitemap_path = os.path.join(self.output_path, "scrape", "sitemap.json")
 
-        sitemap_path = os.path.join(self.output_path, "sitemap.json")
         with open(sitemap_path, "w") as f:
             f.write(json.dumps(self.sitemap))

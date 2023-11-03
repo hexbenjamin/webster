@@ -2,42 +2,44 @@
 This module provides functions to print styled error and warning messages to the console via `rich`.
 """
 
+from typing import Literal
+
 from rich.console import Console
 from rich.theme import Theme
 
+
 _console = Console(
-    theme=Theme({"error": "bold red", "warning": "bold gold1"}, inherit=False)
+    theme=Theme(
+        {
+            "repr.str": "not bold not italic gray82",
+            "accent": "bold steel_blue3",
+            "error": "bold deep_pink2",
+            "success": "bold spring_green3",
+            "warning": "italic gold1",
+        },
+        inherit=False,
+    ),
 )
 CPRINT = _console.print
 
 
-def error(message: str) -> None:
+_csyms = {
+    "accent": "  +  ",
+    "error": " !!! ",
+    "success": " +++ ",
+    "warning": "  !  ",
+}
+
+
+def cmsg(type: Literal["accent", "error", "success", "warning"], msg: str) -> None:
     """
-    Print a styled error message and exit.
+    Print a styled message to the console.
 
     Args:
-        message (str): The error message to print.
-
-    Returns:
-        None
+        type (str): The type of message to print.
+        msg (str): The message to print.
     """
-
-    CPRINT(f"[ [error]!!![/] ]  |  [bold italic]{message}[/]")
-    exit(1)
+    CPRINT(f"[{type}][{_csyms[type]}][/{type}] :  {msg}")
 
 
-def warn(message: str) -> None:
-    """
-    Print a styled warning message.
-
-    Args:
-        message (str): The warning message to print.
-
-    Returns:
-        None
-    """
-
-    CPRINT(f"[  [warning]![/]  ]  |  [italic]{message}[/]")
-
-
-__all__ = ["CPRINT", "error", "warn"]
+__all__ = ["CPRINT", "error", "success", "warn"]

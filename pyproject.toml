@@ -33,7 +33,7 @@ dev = [
 ]
 
 [tool.pdm.scripts]
-webster = {call = "webster.cli:start"}
+webster = {call = "webster.cli:main"}
 
 [tool.pdm.build.wheel-data]
 scripts = ["src\\webster\\cli.py"]

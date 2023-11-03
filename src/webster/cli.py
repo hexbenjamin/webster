@@ -10,10 +10,10 @@ from urllib.parse import urlparse
 import click
 
 from webster import __version__
-from webster.console import CPRINT
+from webster.console import cmsg
 
 from webster.embed import Embedder
-from webster.scrape import scrape_links, save_sitemap
+from webster.scrape import Scraper
 from webster.tools import run_api
 
 
@@ -37,21 +37,19 @@ def main() -> None:
 @click.option(
     "--output",
     "-o",
-    default=f".{sep}.webster{sep}scrape",
+    default=".",
     help="The directory to save the scraped files to. Defaults to './.webster/scrape'.",
 )
 def scrape(url: str, depth: int, output: str) -> None:
     """
     Scrape a website and save the HTML files locally. Depth is the maximum number of link-outs to follow from the URL.
     """
-    url_parts = urlparse(url)
-    scheme, origin, path = (
-        url_parts.scheme,
-        url_parts.netloc,
-        url_parts.path,
-    )
-    sitemap = scrape_links(scheme, origin, path, depth=depth, output_path=output)
-    save_sitemap(sitemap, os.path.join(output, ".webster", "scrape"))
+    scraper = Scraper(url=url, output_path=output)
+    cmsg("accent", msg=f"Scraping '{url}'...")
+    scraper.scrape_links(depth=depth, output_path=output)
+    cmsg("success", msg="Scraped successfully! Saving sitemap...")
+    scraper.save_sitemap()
+    cmsg("success", msg="[u]DONE![/u]")
 
 
 @main.command()
@@ -81,26 +79,27 @@ def embed(
     """
     Embed the scraped HTML files using the OpenAI Text Embedding API.
     """
-    CPRINT("Embedding HTML files...")
+    cmsg("accent", msg="Starting G4F API server...")
+    start_api()
+    cmsg("success", msg="G4F API server started successfully!")
 
+    cmsg("accent", msg="Embedding HTML files to vector DB...")
     embedder = Embedder(
         webster_path=webster_dir, chunk_size=chunk_size, chunk_overlap=chunk_overlap
     )
     embedder.embed()
-    CPRINT("Done!", style="bold green")
+    cmsg("success", msg="[u]DONE![/u]")
 
 
-def start() -> None:
+def start_api() -> None:
     """
     Entry point for the Webster command-line interface.
     """
 
     thread = Thread(target=run_api)
     thread.daemon = True
-
     thread.start()
-    main()
 
 
 if __name__ == "__main__":
-    start()
+    main()
