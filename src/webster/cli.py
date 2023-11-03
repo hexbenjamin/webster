@@ -1,5 +1,5 @@
 """
-This module defines the command-line interface for the Webster package.
+This module defines the command-line interface for the `webster` package.
 """
 
 import os
@@ -12,9 +12,9 @@ import click
 from webster import __version__
 from webster.console import CPRINT
 
-from webster.api import run_api
 from webster.embed import Embedder
 from webster.scrape import scrape_links, save_sitemap
+from webster.tools import run_api
 
 
 @click.group()

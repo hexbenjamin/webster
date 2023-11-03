@@ -17,9 +17,31 @@ from webster.console import warn, CPRINT
 
 
 class Scraper:
+    """
+    A class used to scrape web pages and generate a sitemap.
+
+    Attributes:
+        output_path (os.PathLike): The output path to save the scraped files.
+        sitemap (Dict[str, str]): A dictionary containing the scraped URLs.
+
+    Methods:
+        get_response_and_save(url: str) -> requests.Response:
+            Get the response from the specified URL and save it.
+        scrape_links(scheme: str, origin: str, path: str, depth: int = 3) -> Dict[str, str]:
+            Recursively scrape links from a given URL up to a specified depth.
+        save_sitemap() -> None:
+            Save the sitemap to the output path at `Scraper.output_path`.
+    """
+
     def __init__(self, output_path: os.PathLike = os.getcwd()):
+        """
+        Initialize the Scraper.
+
+        Args:
+            output_path (os.PathLike, optional): The output path to save the scraped files. Defaults to the current working directory.
+        """
         self.output_path = output_path
-        self.sitemap = defaultdict(lambda: "")
+        self.sitemap = {}
 
     def get_response_and_save(self, url: str) -> requests.Response:
         """
