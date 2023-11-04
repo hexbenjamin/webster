@@ -3,21 +3,15 @@ Miscellaneous tools for `webster`.
 """
 
 import os
-from threading import Thread
 
-import g4f
-from g4f.api import Api
-from loguru import logger
+from torch.cuda import is_available
+
+from langchain.embeddings import HuggingFaceEmbeddings
+
+from dotenv import load_dotenv
 
 
-def run_api() -> None:
-    """
-    Run the G4F API interference server.
-    """
-    logger.disable("g4f")
-    Api(engine=g4f, debug=False).run(
-        bind_str="127.0.0.1:1337" if os.name == "nt" else "0.0.0.0:1337"
-    )
+load_dotenv()
 
 
 def mkdir(path: os.PathLike) -> None:
@@ -38,3 +32,15 @@ def clean_url(url: str) -> str:  # sourcery skip: docstrings-for-functions
         .replace(".", "_")
         .replace(":", "--")
     )
+
+
+# EMBEDDINGS = HuggingFaceInferenceAPIEmbeddings(
+#     api_key=os.getenv("HF_TOKEN"),
+#     model_name="sentence-transformers/all-MiniLM-l6-v2",
+# )
+
+EMBEDDINGS = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-l6-v2",
+    model_kwargs={"device": "cuda" if is_available() else "cpu"},
+    encode_kwargs={"normalize_embeddings": False, "show_progress_bar": True},
+)

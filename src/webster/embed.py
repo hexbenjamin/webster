@@ -12,18 +12,13 @@ from langchain.document_loaders import (
     BSHTMLLoader,
     DirectoryLoader,
 )
-from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.schema.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.vectorstores import Chroma
-
-from dotenv import load_dotenv
+from langchain.vectorstores.chroma import Chroma
 
 from webster.console import cmsg
-from webster.tools import api_thread
+from webster.utils import EMBEDDINGS
 
-
-load_dotenv()
 
 LOADER = DirectoryLoader(
     "",
@@ -73,8 +68,6 @@ class Embedder:
             chunk_overlap: The overlap between chunks in tokens (default: 200).
         """
 
-        api_thread()
-
         self.document_loader = LOADER
 
         self.text_splitter = SPLITTER
@@ -85,7 +78,7 @@ class Embedder:
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
 
-        self.embedding_model = OpenAIEmbeddings(model="text-embedding-ada-002")
+        self.embedding_model = EMBEDDINGS
 
         self.db: Chroma = None
         self.db_path = os.path.join(self.webster_path, "chroma")

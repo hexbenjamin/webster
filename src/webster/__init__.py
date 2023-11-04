@@ -8,3 +8,5 @@ https://jasonwebster.dev/blog/chatting-to-a-website-with-langchain-openai-and-ch
 """
 
 __version__ = "0.1.0"
+
+__all__ = ["__version__"]

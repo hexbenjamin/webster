@@ -6,12 +6,10 @@ import os
 from os import sep
 from threading import Thread
 
-from urllib.parse import urlparse
 import click
 
 from webster import __version__
 from webster.console import cmsg
-from webster.tools import run_api
 
 
 @click.group()
@@ -44,7 +42,7 @@ def scrape(url: str, depth: int, output: str) -> None:
 
     from webster.scrape import Scraper
 
-    scraper = Scraper(url=url, output_path=output)
+    scraper = Scraper(url=url, output_path=os.path.normpath(output))
 
     cmsg("accent", msg=f"Scraping '{url}'...")
     scraper.scrape_links(depth=depth)
@@ -85,11 +83,11 @@ def embed(
 
     from webster.embed import Embedder
 
-    api_thread()
-
     cmsg("accent", msg="Embedding HTML files to vector DB...")
     embedder = Embedder(
-        webster_path=webster_dir, chunk_size=chunk_size, chunk_overlap=chunk_overlap
+        webster_path=os.path.normpath(webster_dir),
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
     )
     embedder.embed()
     cmsg("success", msg="[u]DONE![/u]")
@@ -108,23 +106,13 @@ def ask(webster_dir: os.PathLike, query: str) -> None:
     Ask a question to Webster.
     """
 
-    api_thread()
-
     from webster.chat import WebsterChat
 
-    client = WebsterChat(webster_path=webster_dir)
+    client = WebsterChat(webster_path=os.path.normpath(webster_dir))
     cmsg("accent", msg="Asking Webster...")
-    client.ask({"question": query})
+    response = client.ask(query)
+    cmsg("accent", msg=f"[u]Webster:[/u] '{response}'")
     cmsg("success", msg="\n[u]DONE![/u]")
-
-
-def api_thread() -> None:
-    """
-    Entry point for the Webster command-line interface.
-    """
-
-    thread = Thread(target=run_api, daemon=True)
-    thread.start()
 
 
 if __name__ == "__main__":

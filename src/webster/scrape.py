@@ -12,7 +12,7 @@ from typing import Dict
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
-from webster import tools
+from webster import utils
 from webster.console import cmsg
 
 
@@ -100,7 +100,7 @@ class Scraper:
         if not response:
             return
 
-        clean_url = tools.clean_url(url)
+        clean_url = utils.clean_url(url)
         with open(os.path.join(self.scrape_path, f"{clean_url}.html"), "wb") as f:
             f.write(response.content)
 
@@ -124,14 +124,14 @@ class Scraper:
         """
 
         output_path = os.path.join(self.output_path, "scrape")
-        tools.mkdir(output_path)
+        utils.mkdir(output_path)
 
         scheme = self.url.scheme
         origin = self.url.origin
         path = self.url.path
 
         site_url = f"{scheme}://{origin}{path}"
-        clean_url = tools.clean_url(site_url)
+        clean_url = utils.clean_url(site_url)
 
         self.sitemap[clean_url] = site_url
 
@@ -160,7 +160,7 @@ class Scraper:
                 new_url = (
                     f"{href.scheme or 'https'}://{href.netloc or origin}{href.path}"
                 )
-                clean_new_url = tools.clean_url(new_url)
+                clean_new_url = utils.clean_url(new_url)
 
                 if clean_new_url not in visited:
                     visited.add(clean_new_url)
