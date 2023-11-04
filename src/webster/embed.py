@@ -19,7 +19,8 @@ from langchain.vectorstores import Chroma
 
 from dotenv import load_dotenv
 
-from webster.console import error
+from webster.console import cmsg
+from webster.tools import api_thread
 
 
 load_dotenv()
@@ -72,6 +73,8 @@ class Embedder:
             chunk_overlap: The overlap between chunks in tokens (default: 200).
         """
 
+        api_thread()
+
         self.document_loader = LOADER
 
         self.text_splitter = SPLITTER
@@ -109,11 +112,12 @@ class Embedder:
         sitemap_path = os.path.join(self.webster_path, "scrape", "sitemap.json")
 
         if not os.path.exists(sitemap_path):
-            error(
-                (
+            cmsg(
+                "error",
+                msg=(
                     "No sitemap found. Please run 'webster scrape' before embedding, "
                     + "and ensure you have provided the correct path to the '.webster' directory."
-                )
+                ),
             )
 
         with open(sitemap_path, "r") as f:

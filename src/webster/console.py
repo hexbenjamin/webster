@@ -15,7 +15,7 @@ _console = Console(
             "accent": "bold steel_blue3",
             "error": "bold deep_pink2",
             "success": "bold spring_green3",
-            "warning": "italic gold1",
+            "warning": "bold gold1",
         },
         inherit=False,
     ),
@@ -24,10 +24,10 @@ CPRINT = _console.print
 
 
 _csyms = {
-    "accent": "  +  ",
-    "error": " !!! ",
-    "success": " +++ ",
-    "warning": "  !  ",
+    "accent": " + ",
+    "error": "!!!",
+    "success": "+++",
+    "warning": " ! ",
 }
 
 
@@ -39,7 +39,7 @@ def cmsg(type: Literal["accent", "error", "success", "warning"], msg: str) -> No
         type (str): The type of message to print.
         msg (str): The message to print.
     """
-    CPRINT(f"[{type}][{_csyms[type]}][/{type}] :  {msg}")
+    CPRINT(f"[ [{type}]{_csyms[type]}[/{type}] ] |  {msg}")
 
 
 __all__ = ["CPRINT", "error", "success", "warn"]

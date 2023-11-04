@@ -68,6 +68,7 @@ class Scraper:
         """
         self.url = Url(url)
         self.output_path = os.path.join(output_path, ".webster")
+        self.scrape_path = os.path.join(self.output_path, "scrape")
         self.sitemap = {}
 
     def get_response_and_save(self, url: str) -> requests.Response:
@@ -93,14 +94,14 @@ class Scraper:
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            cmsg("warn", msg=err)
+            cmsg("warning", msg=err)
             return None
 
         if not response:
             return
 
         clean_url = tools.clean_url(url)
-        with open(os.path.join(self.output_path, f"{clean_url}.html"), "wb") as f:
+        with open(os.path.join(self.scrape_path, f"{clean_url}.html"), "wb") as f:
             f.write(response.content)
 
         return response
