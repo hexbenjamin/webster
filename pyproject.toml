@@ -1,6 +1,6 @@
 [project]
 name = "webster"
-version = "0.2.0"
+dynamic = ["version"]
 description = "website chat via LM Studio + Langchain + ChromaDB!"
 authors = [
     {name = "hex benjamin", email = "hex@hexbenjam.in"},
@@ -9,10 +9,14 @@ dependencies = [
     "beautifulsoup4>=4.12.2",
     "rich>=13.6.0",
     "click>=8.1.7",
+    "aiohttp>=3.8.6",
 ]
 requires-python = ">=3.10,<3.13"
 readme = "README.md"
 license = {text = "GPL-v3-or-later"}
+
+[project.scripts]
+webster = "webster.cli:run"
 
 [build-system]
 requires = ["setuptools>=61", "wheel"]
@@ -22,3 +26,6 @@ build-backend = "setuptools.build_meta"
 dev = [
     "sourcery>=1.13.0",
 ]
+
+[tool.setuptools.dynamic]
+version = {attr = "webster.__version__"}
