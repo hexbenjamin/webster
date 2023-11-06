@@ -5,7 +5,16 @@
 groups = ["default", "dev"]
 strategy = ["cross_platform"]
 lock_version = "4.4"
-content_hash = "sha256:4dc606000548aecf90b72732870e13e5dc21d449abe3671f03b2f514b643744b"
+content_hash = "sha256:e45bee59f89a3710c7235cdc6a020749c74e8f40afd456218d453917546b7a1f"
+
+[[package]]
+name = "addict"
+version = "2.4.0"
+summary = "Addict is a dictionary whose items can be set using both attribute and item syntax."
+files = [
+    {file = "addict-2.4.0-py3-none-any.whl", hash = "sha256:249bb56bbfd3cdc2a004ea0ff4c2b6ddc84d53bc2194761636eb314d5cfa5dfc"},
+    {file = "addict-2.4.0.tar.gz", hash = "sha256:b3b2210e0e067a281f5646c8c5db92e99b7231ea8b0eb5f74dbdf9e259d4e494"},
+]
 
 [[package]]
 name = "aiohttp"
