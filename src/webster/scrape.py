@@ -3,6 +3,7 @@ import json
 import random
 import aiohttp
 import asyncio
+import re
 from urllib.parse import urlparse
 from collections import defaultdict
 from bs4 import BeautifulSoup
@@ -25,6 +26,14 @@ USER_AGENTS = [
 ]
 
 
+def clean_url(url: str) -> str:
+    return re.sub(r"/|\.|:", "-", url).removesuffix("-")
+
+
+def extract_article(soup: BeautifulSoup):
+    return soup.find("article")
+
+
 class Scraper:
     def __init__(self, site, depth, include_paths=None):
         self.site = site
@@ -32,21 +41,13 @@ class Scraper:
         self.includes = include_paths
         self.sitemap = defaultdict(lambda: "")
 
-    def clean_url(self, url: str) -> str:
-        clean_url = url.replace("https://", "").replace("/", "-").replace(".", "_")
-        return clean_url.removesuffix("-")
-
     async def fetch(self, url: str, session: aiohttp.ClientSession) -> str:
         headers = {"User-Agent": random.choice(USER_AGENTS)}
         try:
             async with session.get(url, headers=headers) as response:
-                log(
-                    "neutral",
-                    "fetching URL:",
-                    url,
-                )
+                log("neutral", "fetching URL:", url)
                 return await response.text()
-        except Exception as e:
+        except aiohttp.ClientError as e:
             log(
                 "error",
                 f"failed to fetch '{url}'!",
@@ -56,22 +57,30 @@ class Scraper:
             )
             return None
 
-    def extract_article(self, soup: BeautifulSoup):
-        article = soup.find("article")
-        return article or None
-
     async def save_response_content(self, content: str, path: str):
         with open(path, "w", encoding="utf-8") as f:
             f.write(content)
 
-    async def scrape_links(
-        self,
-        session: aiohttp.ClientSession,
-        scheme: str,
-        origin: str,
-        path: str,
-        depth=3,
-    ) -> dict:
+    async def process_links(self, links, session, scheme, origin, depth):
+        tasks = []
+        for link in links:
+            href = urlparse(link.get("href", ""))
+            if (href.netloc and href.netloc != origin) or (
+                href.scheme and href.scheme != "https"
+            ):
+                continue
+            tasks.append(
+                self.scrape(
+                    session,
+                    href.scheme or scheme,
+                    href.netloc or origin,
+                    href.path,
+                    depth - 1,
+                )
+            )
+        await asyncio.gather(*tasks)
+
+    async def scrape(self, session, scheme, origin, path, depth):
         site_url = f"{scheme}://{origin}{path}"
         cleaned_url = self.clean_url(site_url)
 
@@ -80,12 +89,12 @@ class Scraper:
             or self.sitemap[cleaned_url] != ""
             or not any(path.startswith(p) for p in self.includes)
         ):
-            return self.sitemap
+            return
 
         self.sitemap[cleaned_url] = site_url
         response_content = await self.fetch(site_url, session)
         if response_content is None:
-            return self.sitemap
+            return
 
         if not os.path.exists("./scrape"):
             os.mkdir("./scrape")
@@ -99,36 +108,14 @@ class Scraper:
         else:
             log("warn", "no article found!")
 
-        links = soup.find_all("a")
-
-        tasks = []
-        for link in links:
-            href = urlparse(link.get("href", ""))
-            if (href.netloc and href.netloc != origin) or (
-                href.scheme and href.scheme != "https"
-            ):
-                continue
-            tasks.append(
-                self.scrape_links(
-                    session,
-                    href.scheme or scheme,
-                    href.netloc or origin,
-                    href.path,
-                    depth=depth - 1,
-                )
-            )
-
-        await asyncio.gather(*tasks)
-        return self.sitemap
+        await self.process_links(soup.find_all("a"), session, scheme, origin, depth)
 
     async def run(self):
         url = urlparse(self.site)
         log("note", "scraping initiated!" f"for: {self.site} @ depth: {self.depth}\n")
 
         async with aiohttp.ClientSession() as session:
-            self.sitemap = await self.scrape_links(
-                session, url.scheme, url.netloc, url.path, depth=self.depth
-            )
+            await self.scrape(session, url.scheme, url.netloc, url.path, self.depth)
 
         with open("./scrape/sitemap.json", "w") as f:
             json.dump(self.sitemap, f)
