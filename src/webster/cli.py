@@ -1,6 +1,6 @@
-from webster import __version__ as version
-from webster.console import C
+from webster import __version__ as version, log
 
 
 def run():
-    C.log("WEBSTER", f"[bold]v{version}[/]")
+    print("")
+    log("neutral", "welcome to WEBSTER", f"v{version}!")

@@ -8,7 +8,8 @@ from rich.text import Text
 from rich.theme import Theme
 
 
-THEME = Dict()
+THEME = THM = Dict()
+
 THEME.base = "#CBDEE1"
 THEME.error = "#CF6E93"
 THEME.warn = "#D7BC8E"
@@ -44,25 +45,31 @@ def C_LOG(
     level: Literal["neutral", "error", "warn", "note", "success"],
     msg: str,
     ctx: str = None,
+    marker: bool = True,
+    label: bool = False,
     locals: bool = False,
-    divider: bool = False,
 ):
-    marker = Text.assemble(
-        "[ ", (_csyms[level], f"{THEME[level]}"), " ]", style=f"bold {THEME.base}"
+    marker = (
+        Text.assemble(
+            "[ ",
+            (_csyms[level], f"{THM[level]}"),
+            " ]",
+            "  ",
+            style=f"bold {THM.base}",
+        )
+        if marker
+        else None
     )
 
-    divider = Text(" || ", style=f"bold {THEME.base}") if divider else None
+    label = (
+        Text(f" {level.upper()}: ", style=f"bold black on {THM[level]}").append(
+            "  ", style="reset"
+        )
+        if label
+        else None
+    )
 
-    msg = Text(msg, style=f"bold {THEME.base}")
+    msg = Text(msg, style=f"bold {THM.base}")
+    ctx = Text(f" {ctx}", Style.parse(f"italic {THM[level]}")) if ctx else None
 
-    ctx = Text(f" {ctx}", Style.parse(f"italic {THEME[level]}")) if ctx else None
-
-    C.log(Text.assemble(marker, divider or " ", msg, ctx or ""), log_locals=locals)
-
-
-# C_LOG("error", "This is an error message.", "This is context.")
-# C_LOG("warn", "This is a warning message.", "This is context.")
-# C_LOG("success", "This is a success message.", "This is context, and locals.")
-# C_LOG("neutral", "This is a neutral message.", "This is context.")
-# C_LOG("note", "This is a note message.", "This is context.")
-C_LOG("error", "This is a normal message.", "Almost definitely.")
+    C.log(Text.assemble(marker or "", label or "", msg, ctx or ""), log_locals=locals)
