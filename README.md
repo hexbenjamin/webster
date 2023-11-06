@@ -2,7 +2,7 @@
 > a website chatbot by [hex benjamin](https://hexbenjam.in)!
 ---
 ## about
-> this project aims to create a chatbot that can be used to chat with a website, much as is described in the tutorial above.  
+> this project aims to create a chatbot that can be used to chat with a website.
 **more to come!**
 
 ## usage
