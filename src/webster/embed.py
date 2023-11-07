@@ -1,6 +1,5 @@
 import os
 import json
-import chardet
 
 from langchain.document_loaders import (
     UnstructuredMarkdownLoader,
@@ -10,16 +9,25 @@ from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
 
-from webster import log
+# from webster import log
 
 
 class Embedder:
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+    ):
+        self.loader = DirectoryLoader(
+            "./scrape",
+            glob="*.md",
+            loader_cls=UnstructuredMarkdownLoader,
+            show_progress=True,
+            loader_kwargs={"mode": "elements", "strategy": "fast"},
+        )
 
-    def load_file_content(self) -> str:
-        with open(self.filepath, "rb") as f:
-            content = f.read()
-            encoding = chardet.detect(content)["encoding"]
-            content = content.decode(encoding or "utf-8", errors="replace")
-        return content
+        self.text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000,
+            chunk_overlap=200,
+        )
+
+        self.data = self.loader.load()
+        self.documents = self.text_splitter.split_documents(self.data)
