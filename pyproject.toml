@@ -16,6 +16,8 @@ dependencies = [
     "openai==v0.28.1",
     "chromadb>=0.4.15",
     "chardet>=5.2.0",
+    "sentence-transformers>=2.2.2",
+    "unstructured>=0.10.29",
 ]
 requires-python = ">=3.10,<3.13"
 readme = "README.md"
