@@ -12,7 +12,6 @@ their corresponding entries in a sitemap JSON file, and create a Chroma database
 import os
 import json
 import re
-import contextlib
 
 from typing import List, Literal
 from langchain.schema.document import Document
@@ -30,8 +29,6 @@ from langchain.vectorstores.utils import filter_complex_metadata
 import chardet
 from bs4 import BeautifulSoup
 
-from rich import inspect
-
 from webster import log
 
 
@@ -41,7 +38,7 @@ class CustomBSHTMLLoader(BSHTMLLoader):
     a custom HTML loader that extends the functionality of the BSHTMLLoader class.
 
     attributes:
-        path (str): The path to the HTML file to be loaded.
+        path (str): the path to the HTML file to be loaded.
     """
 
     def __init__(self, path, **kwargs):
@@ -100,23 +97,32 @@ class Embedder:
     a class for embedding text data using a specified embedding model and saving the resulting embeddings to a Chroma database.
 
     args:
-        docs_path (os.PathLike): the path to the directory containing the text documents to be embedded.
-        docs_format (Literal["html", "md"], optional): the format of the text documents. Defaults to "md".
-        embedding_model (str, optional): the name of the Hugging Face embedding model to use. Defaults to "all-MiniLM-L6-v2".
-        chunk_size (int, optional): the size of the chunks to split the text into. Defaults to 1000.
-        chunk_overlap (int, optional): the amount of overlap between chunks. Defaults to 200.
+        docs_format (Literal["html", "md"], optional): the format of the input documents. defaults to "md".
+        embedding_model (str, optional): the name of the embedding model to use. defaults to "all-MiniLM-L6-v2".
+        chunk_size (int, optional): the size of each chunk of text to embed. defaults to 1000.
+        chunk_overlap (int, optional): the amount of overlap between each chunk of text. defaults to 200.
+        webster_path (str, optional): the path to the Webster directory. defaults to ".webster".
     """
 
-
-class Embedder:
     def __init__(
         self,
         docs_format: Literal["html", "md"] = "md",
         embedding_model: str = "all-MiniLM-L6-v2",
         chunk_size: int = 1000,
         chunk_overlap: int = 200,
-        webster_path: str = ".",
+        webster_path: str = ".webster",
     ):
+        """
+        initialize an Embedder object.
+
+        args:
+            docs_format (Literal["html", "md"], optional): the format of the input documents. defaults to 'md'.
+            embedding_model (str, optional): the name of the Hugging Face embedding model to use. defaults to 'all-MiniLM-L6-v2'.
+            chunk_size (int, optional): the size of each text chunk to embed. defaults to 1000.
+            chunk_overlap (int, optional): the amount of overlap between text chunks. defaults to 200.
+            webster_path (str, optional): the path to the Webster project directory. defaults to '.webster'.
+        """
+
         self.webster_path = webster_path
         self.db_path = os.path.join(self.webster_path, "db")
 
@@ -142,7 +148,7 @@ class Embedder:
         maps the sources of the given documents to their corresponding entries in the sitemap.
 
         args:
-            documents (List[Document]): The list of documents to map sources for.
+            documents (List[Document]): the list of documents to map sources for.
 
         returns:
             None
