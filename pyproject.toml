@@ -11,6 +11,7 @@ dependencies = [
     "click>=8.1.7",
     "aiohttp>=3.8.6",
     "addict>=2.4.0",
+    "html2text>=2020.1.16",
 ]
 requires-python = ">=3.10,<3.13"
 readme = "README.md"
