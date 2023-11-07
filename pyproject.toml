@@ -12,6 +12,10 @@ dependencies = [
     "aiohttp>=3.8.6",
     "addict>=2.4.0",
     "html2text>=2020.1.16",
+    "langchain>=0.0.331",
+    "openai==v0.28.1",
+    "chromadb>=0.4.15",
+    "chardet>=5.2.0",
 ]
 requires-python = ">=3.10,<3.13"
 readme = "README.md"
