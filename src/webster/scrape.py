@@ -1,3 +1,26 @@
+"""
+this module contains a web scraper for scraping web pages and processing links.
+
+the Scraper class can be used to scrape a web page and save the scraped content in either HTML or Markdown format.
+the scraper can also recursively process links found in the web page up to a specified depth.
+
+the module also contains several utility functions for cleaning URLs, extracting tags from BeautifulSoup objects,
+parsing Markdown content, and decomposing media tags.
+
+classes:
+    Scraper
+
+functions:
+    clean_url
+    extract_tag
+    parse_markdown
+    decompose_media
+
+constants:
+    USER_AGENTS
+    HTML_IO
+"""
+
 import os
 import json
 import random
