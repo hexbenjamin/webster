@@ -38,8 +38,6 @@ import html2text
 
 from webster import log
 
-from rich import inspect
-
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
@@ -181,7 +179,6 @@ class Scraper:
         headers = {"User-Agent": random.choice(USER_AGENTS)}
         try:
             async with session.get(url, headers=headers) as response:
-                log("neutral", "fetching URL:", url)
                 return await response.text()
         except aiohttp.ClientError as e:
             log(
@@ -270,18 +267,20 @@ class Scraper:
             None
         """
 
-        site_url = f"{scheme}://{origin}{path}"
-        cleaned_url = clean_url(origin + path)
-
-        if (
-            depth < 0
-            or self.sitemap[cleaned_url] != ""
-            or not any(path.startswith(p) for p in self.includes)
-            or site_url == ""
+        if depth < 0 or (
+            len(self.includes) > 0
+            and all(not path.startswith(inc) for inc in self.includes)
         ):
             return
 
+        site_url = f"{scheme}://{origin}{path}"
+        cleaned_url = clean_url(origin + path)
+
+        if self.sitemap[cleaned_url] != "" or site_url == "":
+            return
+
         self.sitemap[cleaned_url] = site_url
+
         response_content = await self.fetch(site_url, session)
         if response_content is None:
             return
@@ -295,6 +294,8 @@ class Scraper:
 
             if not os.path.exists("./scrape"):
                 os.makedirs("./scrape")
+
+            log("neutral", "saving URL:", site_url)
 
             await self.save_output(
                 output,
