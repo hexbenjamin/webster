@@ -1,10 +1,15 @@
+"""
+this module contains the command-line interface for webster.
+it provides a CLI for scraping a website and saving the content locally.
+"""
+
 import asyncio
 import click
 
-from rich.traceback import install
-
 from webster import __version__ as version, log
 from webster.scrape import Scraper
+
+from rich.traceback import install
 
 
 @click.group()
@@ -27,21 +32,21 @@ def cli() -> None:
     "--depth",
     "-d",
     default=3,
-    help="the maximum depth to scrape. Defaults to 3.",
+    help="The maximum depth to scrape. Defaults to 3.",
 )
 @click.option(
     "--include",
     "-i",
     multiple=True,
-    help="only scrape URLs that start with this path. can be used multiple times.",
+    help="Only scrape URLs that start with this path. Can be used multiple times.",
 )
 @click.option(
-    "--tag-name", "-t", help="only scrape the first tag with this name on the page."
+    "--tag-name", "-t", help="Only scrape the first tag with this name on the page."
 )
 @click.option(
     "--out-format",
     "-f",
-    help="the output format for saving scraped content. accepts 'html' or 'md'.",
+    help="The output format for saving scraped content. Accepts 'html' or 'md'.",
 )
 def scrape(
     url: str,
@@ -51,12 +56,16 @@ def scrape(
     out_format: str = "html",
 ) -> None:
     """
-    scrape a website and save the content locally. depth is the maximum number of link-outs to follow from the URL.
+    scrape a website and save the content locally.
+    depth is the maximum number of link-outs to follow from the URL.
 
     args:
-        url (str): the URL to scrape.
-        depth (int): the maximum depth to scrape.
-        include (list): a list of paths to include. defaults to None.
+        url (str): The URL to scrape.
+        depth (int): The maximum depth to scrape.
+        include (list): A list of paths to include. Defaults to None.
+
+    returns:
+        None
     """
 
     if include is None:
@@ -67,8 +76,8 @@ def scrape(
     if out_format.lower() not in {"html", "md"}:
         log(
             "warn",
-            "invalid output format!",
-            "defaulting to 'html'.",
+            "Invalid output format!",
+            "Defaulting to 'html'.",
             marker=False,
             label=True,
         )
@@ -88,6 +97,12 @@ def scrape(
 def run() -> None:
     """
     entrypoint for the 'webster' command-line script.
+
+    args:
+        None
+
+    returns:
+        Nones
     """
 
     install(show_locals=True)
