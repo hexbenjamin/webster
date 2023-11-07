@@ -324,9 +324,3 @@ class Scraper:
 
         with open("./scrape/sitemap.json", "w") as f:
             json.dump(self.sitemap, f)
-
-        log(
-            "success",
-            "scraping completed!",
-            "sitemap saved to './scrape/sitemap.json'.",
-        )
