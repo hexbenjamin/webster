@@ -9,8 +9,6 @@ import click
 from webster import __version__ as version, log
 from webster.scrape import Scraper
 
-from rich.traceback import install
-
 
 @click.group()
 def cli() -> None:
@@ -105,8 +103,10 @@ def run() -> None:
         Nones
     """
 
+    from rich.traceback import install
+
     install(show_locals=True)
 
-    print("")
+    print(" . . . ")
     log("success", "webster", f"v{version}")
     cli()
