@@ -4,7 +4,7 @@
 GitHub: https://dev.hexbenjam.in/webster
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 from webster.console import C, C_LOG as log
 from webster.embed import Embedder

@@ -137,6 +137,7 @@ class Scraper:
         include_paths: list = None,
         tag_filter: dict = None,
         output_format: str = None,
+        webster_path: str = ".webster",
     ) -> None:
         """
         Initialize the Scraper object.
@@ -159,6 +160,7 @@ class Scraper:
         self.output_format = (
             output_format.lower() if output_format.lower() in {"html", "md"} else "html"
         )
+        self.scrape_path = os.path.join(webster_path, "scrape")
         self.sitemap = defaultdict(lambda: "")
 
     async def fetch(self, url: str, session: aiohttp.ClientSession) -> str:
@@ -292,14 +294,16 @@ class Scraper:
             if self.output_format == "md":
                 output = parse_markdown(output)
 
-            if not os.path.exists("./scrape"):
-                os.makedirs("./scrape")
+            if not os.path.exists(self.scrape_path):
+                os.makedirs(self.scrape_path)
 
             log("neutral", "saving URL:", site_url)
 
+            filename = f"{cleaned_url}.{self.output_format}"
+
             await self.save_output(
                 output,
-                f"./scrape/{cleaned_url}.{self.output_format}",
+                os.path.join(self.scrape_path, filename),
             )
 
         await self.process_links(soup.find_all("a"), session, scheme, origin, depth)
@@ -322,5 +326,5 @@ class Scraper:
         async with aiohttp.ClientSession() as session:
             await self.scrape(session, url.scheme, url.netloc, url.path, self.depth)
 
-        with open("./scrape/sitemap.json", "w") as f:
+        with open(os.path.join(self.scrape_path, "sitemap.json"), "w") as f:
             json.dump(self.sitemap, f)

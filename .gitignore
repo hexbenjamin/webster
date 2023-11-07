@@ -164,6 +164,7 @@ cython_debug/
 # + HEXB +
 
 # ~ DIRS
+.webster/
 archive/
 scrape/
 
