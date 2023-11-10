@@ -297,6 +297,7 @@ class Scraper:
                 wlog("neutral", "saving URL:", site_url, marker=True, label=False)
                 self.urls_list.append(site_url)
                 soup = BeautifulSoup(response_content, "html.parser")
+                await self.process_links(soup.find_all("a"), session, scheme, origin, depth)
         else:
             cleaned_url = clean_url(origin + path)
 
@@ -321,7 +322,7 @@ class Scraper:
                     os.path.join(self.scrape_path, filename),
                 )
 
-        await self.process_links(soup.find_all("a"), session, scheme, origin, depth)
+                await self.process_links(soup.find_all("a"), session, scheme, origin, depth)
 
     async def run(self) -> None:
         """
