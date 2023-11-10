@@ -19,6 +19,7 @@ dependencies = [
     "sentence-transformers>=2.2.2",
     "unstructured>=0.10.29",
     "markdown>=3.5.1",
+    "torch>=2.1.0",
 ]
 requires-python = ">=3.10,<3.13"
 readme = "README.md"
@@ -34,7 +35,13 @@ build-backend = "setuptools.build_meta"
 [tool.pdm.dev-dependencies]
 dev = [
     "sourcery>=1.13.0",
+    "langchainhub>=0.1.13",
 ]
+
+[[tool.pdm.source]]
+name = "torch121"
+url = "https://download.pytorch.org/whl/cu121"
+include_packages = ["torch", "torchvision", "torchaudio"]
 
 [tool.setuptools.dynamic]
 version = {attr = "webster.__version__"}

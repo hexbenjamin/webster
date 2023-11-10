@@ -18,7 +18,7 @@ THEME.neutral = "#8CB4DE"
 THEME.note = "#9180BD"
 
 
-C = Console(
+C = Console(  # sourcery skip: avoid-single-character-names-variables
     theme=Theme(
         {
             "repr.number": "none",
@@ -41,14 +41,25 @@ _csyms = {
 }
 
 
-def C_LOG(
+def c_log(
     level: Literal["neutral", "error", "warn", "note", "success"],
     msg: str,
     ctx: str = None,
     marker: bool = True,
     label: bool = False,
     locals: bool = False,
-):
+) -> None:
+    """
+    logs a stylized message with the specified level.
+
+    args:
+        level (Literal["neutral", "error", "warn", "note", "success"]): the log level.
+        msg (str): the message to log.
+        ctx (str, optional): the context of the log message. defaults to None.
+        marker (bool, optional): whether to include a marker in the log message. defaults to True.
+        label (bool, optional): whether to include a label in the log message. defaults to False.
+        locals (bool, optional): whether to include local variables in the log message. defaults to False.
+    """
     marker = (
         Text.assemble(
             "[ ",
@@ -57,17 +68,18 @@ def C_LOG(
             "  ",
             style=f"bold {THM.base}",
         )
-        if marker
-        else None
+        or None
     )
 
     label = (
-        Text(f" {level.upper()}: ", style=f"bold black on {THM[level]}").append(
-            "  ", style="reset"
+        Text(
+            f" {level.upper()}: ",
+            style=f"bold black on {THM[level]}",
+        ).append(
+            "  ",
+            style="reset",
         )
-        if label
-        else None
-    )
+    ) or None
 
     msg = Text(msg, style=f"bold {THM.base}")
     ctx = Text(f" {ctx}", Style.parse(f"italic {THM[level]}")) if ctx else None

@@ -29,7 +29,7 @@ from langchain.vectorstores.utils import filter_complex_metadata
 import chardet
 from bs4 import BeautifulSoup
 
-from webster import log
+from webster import wlog
 
 
 # Custom BSHTMLLoader to handle different encodings
@@ -156,7 +156,7 @@ class Embedder:
 
         sitemap_path = os.path.join(self.webster_path, "scrape", "sitemap.json")
         if not os.path.exists(sitemap_path):
-            log(
+            wlog(
                 "error",
                 "sitemap.json not found!",
                 "make sure to run 'webster scrape' first, and to pass in the path to the '.webster' directory.",
@@ -182,14 +182,14 @@ class Embedder:
         embeddings to a Chroma database at the specified path.
         """
 
-        log("note", "loading documents...")
+        wlog("note", "loading documents...")
 
         self.documents = self.loader.load()
         self.documents = self.text_splitter.split_documents(self.documents)
         self.documents = filter_complex_metadata(self.documents)
         self.map_sources(self.documents)
 
-        log("note", "creating Chroma database", f"at {self.db_path}...")
+        wlog("note", "creating Chroma database", f"at {self.db_path}...")
         self.db = Chroma.from_documents(
             self.documents,
             self.embedding_model,
