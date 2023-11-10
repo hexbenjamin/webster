@@ -28,6 +28,8 @@ import aiohttp
 import asyncio
 import re
 
+from time import sleep
+
 from urllib.parse import urlparse
 from collections import defaultdict
 
@@ -287,8 +289,6 @@ class Scraper:
         if response_content is None:
             return
 
-        soup = BeautifulSoup(response_content, "html.parser")
-
         if not os.path.exists(self.scrape_path):
             os.makedirs(self.scrape_path)
 
@@ -296,6 +296,7 @@ class Scraper:
             if site_url not in self.urls_list:
                 wlog("neutral", "saving URL:", site_url, marker=True, label=False)
                 self.urls_list.append(site_url)
+                soup = BeautifulSoup(response_content, "html.parser")
         else:
             cleaned_url = clean_url(origin + path)
 
@@ -303,6 +304,8 @@ class Scraper:
                 return
 
             self.sitemap[cleaned_url] = site_url
+
+            soup = BeautifulSoup(response_content, "html.parser")
 
             if output := extract_tag(soup, **self.tag_filter):
                 output = decompose_media(output).decode()
